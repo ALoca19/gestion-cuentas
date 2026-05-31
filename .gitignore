@@ -1,0 +1,7 @@
+wallet.db
+dist/
+build/
+__pycache__/
+*.spec
+*.xlsx
+prueba.py
