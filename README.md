@@ -26,14 +26,14 @@ Proyecto personal creado para llevar el control de múltiples cuentas bancarias,
 
 ## 🛠️ Tecnologías utilizadas
 
-| Tecnología     | Uso                              |
-|----------------|----------------------------------|
-| Python 3.13    | Lenguaje principal               |
-| SQLite         | Base de datos local              |
-| CustomTkinter  | Interfaz gráfica de escritorio   |
-| Matplotlib     | Gráficas y visualización         |
-| OpenPyXL       | Exportación a Excel              |
-| PyInstaller    | Generación del ejecutable `.exe` |
+| Tecnología    | Uso                              |
+| ------------- | -------------------------------- |
+| Python 3.13   | Lenguaje principal               |
+| SQLite        | Base de datos local              |
+| CustomTkinter | Interfaz gráfica de escritorio   |
+| Matplotlib    | Gráficas y visualización         |
+| OpenPyXL      | Exportación a Excel              |
+| PyInstaller   | Generación del ejecutable `.exe` |
 
 ---
 
@@ -57,20 +57,24 @@ gestion-cuentas/
 ## 🚀 Instalación y uso
 
 ### Requisitos
+
 - Python 3.8 o superior
 
 ### 1. Clona el repositorio
+
 ```bash
 git clone https://github.com/ALoca19/gestion-cuentas.git
 cd gestion-cuentas
 ```
 
 ### 2. Instala las dependencias
+
 ```bash
 pip install customtkinter matplotlib openpyxl
 ```
 
 ### 3. Ejecuta la app
+
 ```bash
 python pantallaPrincipal.py
 ```
@@ -94,7 +98,11 @@ El archivo `.exe` se genera en la carpeta `dist/`.
 
 ## 📊 Capturas de pantalla
 
-*Próximamente*
+![Pantalla principal](screenshots/principal.png)
+
+![Pantalla principal](screenshots/cuentas.png)
+
+![Pantalla principal](screenshots/sitios.png)
 
 ---
 
@@ -113,4 +121,4 @@ Proyecto personal de uso libre.
 
 ---
 
-*Desarrollado con Python como proyecto de aprendizaje y uso personal.*
+_Desarrollado con Python como proyecto de aprendizaje y uso personal._
