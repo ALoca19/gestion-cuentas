@@ -106,6 +106,12 @@ El archivo `.exe` se genera en la carpeta `dist/`.
 
 ---
 
+## 📊 Estructura de la Base de datos
+
+![Pantalla principal](screenshots/bd.png)
+
+---
+
 ## 🗺️ Roadmap
 
 - [ ] Modo oscuro
