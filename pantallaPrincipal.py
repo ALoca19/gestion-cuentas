@@ -172,6 +172,7 @@ class VentanaPrincipal(ctk.CTk):
         self.tarjetas = {} #Lista de tarjetas para poder resaltar la activa
         self.fechaDesde = None #Para recordar el rango de fechas seleccionado al exportar
         self.fechaHasta = None
+        self.sitioActivoId  = None   # para filtrat por propocito
         self.construirUI()
 
     def construirUI(self):
@@ -293,18 +294,65 @@ class VentanaPrincipal(ctk.CTk):
                      anchor="w").pack(fill="x", padx=14, pady=(0, 10))
         
         #Panel de cuentas
-        frameCuentas = ctk.CTkFrame(self,
-                                    fg_color="transparent")
-        frameCuentas.pack(fill="x", padx=16, pady=12)
+                # ── Tabs de sitios ─────────────────────────
+        frameSitios = ctk.CTkFrame(self, fg_color="transparent")
+        frameSitios.pack(fill="x", padx=16, pady=(0, 8))
 
-        cuentas =  db.obtener_cuentas() #Obtiene las cuentas desde la base de datos
+        sitios = db.obtener_sitios()
 
-        for i, cuenta in enumerate(cuentas):
-            saldo = db.calcular_saldo(cuenta["id"])
-            tarjeta = TarjetaCuenta(frameCuentas, cuenta, saldo, on_click=self._filtrarPorCuenta)
-            tarjeta.grid(row=0, column=i, padx=(0 if i == 0 else 8, 0), sticky="ew")
-            frameCuentas.grid_columnconfigure(i, weight=1) #Hace que cada tarjeta se expanda por igual
-            self.tarjetas[cuenta["id"]] = tarjeta #Guarda referencia a la tarjeta para poder resaltar después
+        # Botón "Todos"
+        ctk.CTkButton(
+            frameSitios,
+            text="Todos",
+            font=(FUENTE, 12),
+            height=30,
+            width=70,
+            fg_color="#378ADD" if self.sitioActivoId is None else "transparent",
+            text_color="white" if self.sitioActivoId is None else COLOR_MUTED,
+            border_width=1,
+            border_color="#E0DED6",
+            command=lambda: self._seleccionarSitio(None)
+        ).pack(side="left", padx=(0, 6))
+
+        for sitio in sitios:
+            activo = self.sitioActivoId == sitio["id"]
+            ctk.CTkButton(
+                frameSitios,
+                text=sitio["nombre"],
+                font=(FUENTE, 12),
+                height=30,
+                fg_color="#378ADD" if activo else "transparent",
+                text_color="white" if activo else COLOR_MUTED,
+                border_width=1,
+                border_color="#E0DED6",
+                command=lambda s=sitio: self._seleccionarSitio(s["id"])
+            ).pack(side="left", padx=(0, 6))
+
+        # ── Cuentas agrupadas por propósito ────────
+        frameCuentas = ctk.CTkFrame(self, fg_color="transparent")
+        frameCuentas.pack(fill="x", padx=16, pady=(0, 8))
+
+        grupos = db.cuentas_por_sitio_y_proposito(self.sitioActivoId)
+
+        col = 0
+        for proposito, cuentas in grupos.items():
+            total = sum(db.calcular_saldo(c["id"]) for c in cuentas)
+
+            # Si hay más de una cuenta en el grupo, mostrar tarjeta agrupada
+            if len(cuentas) > 1:
+                tarjeta = self._crearTarjetaGrupo(
+                    frameCuentas, proposito, cuentas, total)
+            else:
+                tarjeta = TarjetaCuenta(
+                    frameCuentas, cuentas[0],
+                    db.calcular_saldo(cuentas[0]["id"]),
+                    on_click=self._filtrarPorCuenta)
+                self.tarjetas[cuentas[0]["id"]] = tarjeta
+
+            tarjeta.grid(row=0, column=col,
+                        padx=(0 if col == 0 else 8, 0), sticky="ew")
+            frameCuentas.grid_columnconfigure(col, weight=1)
+            col += 1
 
         #Fechas
         # ── Filtro por fechas ──────────────────────
@@ -449,6 +497,72 @@ class VentanaPrincipal(ctk.CTk):
         db.eliminar_movimiento(mov_id)
         self._refrescar()
 
+    def _seleccionarSitio(self, sitio_id):
+        self.sitioActivoId  = sitio_id
+        self.cuentaActivaId = None
+        self._refrescar()
+
+    def _crearTarjetaGrupo(self, padre, proposito, cuentas, total):
+        """Tarjeta que agrupa varias cuentas del mismo propósito."""
+        frame = ctk.CTkFrame(padre, fg_color="white", corner_radius=12)
+
+        # Barra multicolor — usa el color de la primera cuenta
+        ctk.CTkFrame(
+            frame, height=4,
+            fg_color=cuentas[0]["color"],
+            corner_radius=0
+        ).pack(fill="x")
+
+        contenido = ctk.CTkFrame(frame, fg_color="transparent")
+        contenido.pack(fill="both", padx=14, pady=8)
+
+        # Propósito como título
+        ctk.CTkLabel(
+            contenido,
+            text=proposito,
+            font=(FUENTE, 12),
+            text_color=COLOR_MUTED,
+            anchor="w"
+        ).pack(fill="x")
+
+        # Total combinado
+        color_total = "#D85A30" if total < 0 else COLOR_TEXTO
+        ctk.CTkLabel(
+            contenido,
+            text=f"${total:,.2f}",
+            font=(FUENTE, 18, "bold"),
+            text_color=color_total,
+            anchor="w"
+        ).pack(fill="x")
+
+        # Detalle por cuenta
+        for c in cuentas:
+            saldo = db.calcular_saldo(c["id"])
+            fila = ctk.CTkFrame(contenido, fg_color="transparent")
+            fila.pack(fill="x", pady=(2, 0))
+            fila.grid_columnconfigure(1, weight=1)
+
+            ctk.CTkFrame(
+                fila, width=6, height=6,
+                fg_color=c["color"], corner_radius=3
+            ).grid(row=0, column=0, padx=(0, 6))
+
+            ctk.CTkLabel(
+                fila,
+                text=c["nombre"],
+                font=(FUENTE, 10),
+                text_color=COLOR_MUTED,
+                anchor="w"
+            ).grid(row=0, column=1, sticky="w")
+
+            ctk.CTkLabel(
+                fila,
+                text=f"${saldo:,.2f}",
+                font=(FUENTE, 10, "bold"),
+                text_color="#D85A30" if saldo < 0 else COLOR_TEXTO
+            ).grid(row=0, column=2, padx=(8, 0))
+
+        return frame
 #Arranca
 if __name__ == "__main__":
     

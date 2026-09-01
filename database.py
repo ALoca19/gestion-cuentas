@@ -351,12 +351,10 @@ def obtener_movimientos_completos():
 
 
 def cuentas_por_sitio_y_proposito(sitio_id=None):
-    """Trae cuentas agrupadas por propósito, filtradas por sitio opcional."""
     with get_connection() as conn:
         query = """
             SELECT c.*, 
-                   COALESCE(s.nombre, 'Sin sitio') AS sitio_nombre,
-                   s.color AS sitio_color
+                   COALESCE(s.nombre, 'Sin sitio') AS sitio_nombre
             FROM cuentas c
             LEFT JOIN sitios s ON s.id = c.sitio_id
             WHERE c.activa = 1
@@ -377,7 +375,7 @@ def cuentas_por_sitio_y_proposito(sitio_id=None):
                 grupos[prop] = []
             grupos[prop].append(c)
         return grupos
-
+    
 if __name__ == "__main__":
     inicializar_db()
     print("✅ Base de datos inicializada en:", DB_PATH)
