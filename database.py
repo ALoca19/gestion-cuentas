@@ -349,6 +349,35 @@ def obtener_movimientos_completos():
         """).fetchall()
         return [dict(r) for r in rows]
 
+
+def cuentas_por_sitio_y_proposito(sitio_id=None):
+    """Trae cuentas agrupadas por propósito, filtradas por sitio opcional."""
+    with get_connection() as conn:
+        query = """
+            SELECT c.*, 
+                   COALESCE(s.nombre, 'Sin sitio') AS sitio_nombre,
+                   s.color AS sitio_color
+            FROM cuentas c
+            LEFT JOIN sitios s ON s.id = c.sitio_id
+            WHERE c.activa = 1
+        """
+        params = []
+        if sitio_id:
+            query += " AND c.sitio_id = ?"
+            params.append(sitio_id)
+        query += " ORDER BY c.proposito, c.nombre"
+        rows = conn.execute(query, params).fetchall()
+        cuentas = [dict(r) for r in rows]
+
+        # Agrupar por propósito
+        grupos = {}
+        for c in cuentas:
+            prop = c["proposito"] or c["nombre"]
+            if prop not in grupos:
+                grupos[prop] = []
+            grupos[prop].append(c)
+        return grupos
+
 if __name__ == "__main__":
     inicializar_db()
     print("✅ Base de datos inicializada en:", DB_PATH)
