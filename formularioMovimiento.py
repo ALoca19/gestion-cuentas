@@ -231,10 +231,6 @@ class FormularioMovimiento(ctk.CTkToplevel):
             notas        = notas
         )
 
-        print(f"Guardando: subcuenta_id={subcuentaId}, tipo={self.tipo}, monto={monto}")
-        db.agregar_movimiento(...)
-        self.destroy()
-
         self.destroy()
 
     def _actualizarSitios(self, cuenta_nombre):

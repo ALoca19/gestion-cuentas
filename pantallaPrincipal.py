@@ -4,6 +4,7 @@ import customtkinter as ctk
 import database as db
 from exportar import exportar_excel as exportar
 from gestionSitios import GestionSitios as GesSitios
+from gestionCuentas import GestionCuentas as GesCuentas
 from graficas import VentanaGraficas as Graficas
 from config import FUENTE, COLOR_BG, COLOR_CARD, COLOR_TEXTO, COLOR_MUTED
 
@@ -186,11 +187,11 @@ class VentanaPrincipal(ctk.CTk):
         ).pack(side="right", padx=(0, 8), pady=10)
 
         ctk.CTkButton(
-            barra, text="🌙", font=(FUENTE, 16), height=34, width=40,
-            fg_color="transparent", border_width=1,
-            border_color="#E0DED6", text_color=COLOR_MUTED,
-            hover_color="#E8E6DF", command=self._toggleModo
-        ).pack(side="right", padx=(0, 8), pady=10)
+                    barra, text="Cuentas", font=(FUENTE, 13), height=34,
+                    fg_color="transparent", border_width=1,
+                    border_color="#E0DED6", text_color=COLOR_MUTED,
+                    hover_color="#E8E6DF", command=self._abrirCuentas
+                ).pack(side="right", padx=(0, 8), pady=10)
 
         # ── Resumen ─────────────────────────────────
         frameResumen = ctk.CTkFrame(self, fg_color="transparent")
@@ -393,6 +394,11 @@ class VentanaPrincipal(ctk.CTk):
         ventana = GesSitios(self)
         ventana.grab_set()
         self.wait_window(ventana)
+
+    def _abrirCuentas(self):
+            ventana = GesCuentas(self)
+            ventana.grab_set()
+            self.wait_window(ventana)
 
     def _exportar(self):
         import os
