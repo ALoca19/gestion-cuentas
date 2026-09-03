@@ -56,41 +56,39 @@ def _hoja_resumen(wb):
     ws["A2"].font = Font(italic=True, color="888780")
 
     # Encabezados
-    encabezados = ["Cuenta", "Tipo", "Sitio", "Saldo actual", "Propósito"]
+    encabezados = ["Cuenta", "Sitio", "Tipo", "Saldo actual", "Propósito"]
     for i, enc in enumerate(encabezados, start=1):
         celda = ws.cell(row=4, column=i, value=enc)
         _estilo_encabezado(celda)
     ws.row_dimensions[4].height = 24
 
-    # Datos
-    cuentas = db.obtener_cuentas()
-    tipos   = {"debito": "Débito", "credito": "Crédito",
-               "ahorros": "Ahorros", "efectivo": "Efectivo", "otro": "Otro"}
-    sitios  = {s["id"]: s["nombre"] for s in db.obtener_sitios()}
+    # Datos — por subcuenta
+    subcuentas = db.obtener_subcuentas()
+    tipos = {"debito": "Débito", "credito": "Crédito",
+             "ahorros": "Ahorros", "efectivo": "Efectivo", "otro": "Otro"}
 
     total = 0
-    for i, cuenta in enumerate(cuentas, start=5):
-        saldo = db.calcular_saldo(cuenta["id"])
+    for i, sc in enumerate(subcuentas, start=5):
+        saldo = db.calcular_saldo_subcuenta(sc["id"])
         total += saldo
-        ws.cell(row=i, column=1, value=cuenta["nombre"])
-        ws.cell(row=i, column=2, value=tipos.get(cuenta["tipo"], ""))
-        ws.cell(row=i, column=3, value=sitios.get(cuenta["sitio_id"], "Sin sitio"))
+        ws.cell(row=i, column=1, value=sc["cuenta_nombre"])
+        ws.cell(row=i, column=2, value=sc["sitio_nombre"])
+        ws.cell(row=i, column=3, value=tipos.get(sc["tipo"], ""))
         celda_saldo = ws.cell(row=i, column=4, value=saldo)
         celda_saldo.number_format = '"$"#,##0.00'
         celda_saldo.font = Font(
             color="1D9E75" if saldo >= 0 else "D85A30", bold=True)
-        ws.cell(row=i, column=5, value=cuenta.get("proposito", ""))
+        ws.cell(row=i, column=5, value=sc.get("proposito", ""))
         if i % 2 == 0:
             _color_fila(ws, i, "F5F4EF")
 
     # Total
-    fila_total = len(cuentas) + 5
+    fila_total = len(subcuentas) + 5
     ws.cell(row=fila_total, column=3, value="TOTAL").font = Font(bold=True)
     celda_total = ws.cell(row=fila_total, column=4, value=total)
     celda_total.number_format = '"$"#,##0.00'
     celda_total.font = Font(bold=True, size=12,
                             color="1D9E75" if total >= 0 else "D85A30")
-
 
 # ── Hoja 2: Movimientos ────────────────────────────────────────────────────────
 
@@ -159,7 +157,6 @@ def _hoja_por_cuenta(wb):
             bold=True, color="1D9E75" if saldo >= 0 else "D85A30")
         if i % 2 == 0:
             _color_fila(ws, i, "F5F4EF")
-
 
 if __name__ == "__main__":
     db.inicializar_db()

@@ -45,7 +45,6 @@ class VentanaGraficas(ctk.CTkToplevel):
         cuentas  = [r["nombre"] for r in resumen]
         gastos   = [r["total_gastos"] for r in resumen]
         ingresos = [r["total_ingresos"] for r in resumen]
-        colores  = [r["color"] for r in resumen]
 
         x = range(len(cuentas))
         ancho = 0.35

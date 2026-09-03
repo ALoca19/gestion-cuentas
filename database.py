@@ -304,6 +304,25 @@ def obtener_movimientos(subcuenta_id=None, cuenta_id=None, sitio_id=None,
     with get_connection() as conn:
         return [dict(r) for r in conn.execute(query, params).fetchall()]
 
+def obtener_movimientos_completos():
+    """Trae todos los movimientos con cuenta, sitio y categoría para exportar."""
+    with get_connection() as conn:
+        rows = conn.execute("""
+            SELECT m.fecha, m.tipo, m.monto, m.descripcion,
+                   cat.nombre  AS categoria,
+                   c.nombre    AS cuenta,
+                   s.nombre    AS sitio,
+                   sc.tipo     AS cuenta_tipo,
+                   m.referencia, m.notas, m.created_at
+            FROM movimientos m
+            JOIN subcuentas sc  ON sc.id  = m.subcuenta_id
+            JOIN cuentas c      ON c.id   = sc.cuenta_id
+            JOIN sitios s       ON s.id   = sc.sitio_id
+            LEFT JOIN categorias cat ON cat.id = m.categoria_id
+            ORDER BY m.fecha DESC, m.id DESC
+        """).fetchall()
+        return [dict(r) for r in rows]
+
 def eliminar_movimiento(mov_id):
     with get_connection() as conn:
         conn.execute("DELETE FROM movimientos WHERE id=?", (mov_id,))
